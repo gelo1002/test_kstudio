@@ -14,6 +14,37 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+
+Route::group(['prefix' => 'v1'], function () {
+    
+    // Register/Login by Facebook
+    Route::get('login/{drive}',                 'Core\LoginController@redirectToProvider');
+    Route::get('login/{drive}/callback',        'Core\LoginController@handleProviderCallback');
+
+    // Register/Login
+    Route::post('user/register',                'Core\UserController@create');
+    Route::get('user/register/verify-email',    'Core\UserController@verifyEmail');
+    Route::post('login',                        'Core\LoginController@login');
+});
+
+Route::group(['middleware' => ['auth:api'], 'prefix' => 'v1'], function () {
+    // Platform Users
+    Route::get('user/profile',                  'Core\UserController@getProfile');
+    Route::post('user/profile/files',           'Core\UserController@createFile');
+    Route::post('user/profile/all/files',       'Core\UserController@getFiles');
+    Route::post('user/profile/file',            'Core\UserController@getFile');
+    // Route::put('user/profile/avatar',           'Core\UserController@UpdateAvatar'); // PENDEDING
+    Route::put('user/profile',                  'Core\UserController@updateProfile');
+    Route::put('user/profile/update-password',  'Core\UserController@updatePassword');
+    Route::delete('user/profile/files',         'Core\UserController@deleteFile');
+    Route::delete('user/profile',               'Core\UserController@deleteProfile');
+
+    // Admin
+    // Route::get('admin/users',                   'Admin\AdminController@create'); // PENDEDING
+    // Route::get('admin/user/{eid}',              'Admin\AdminController@create'); // PENDEDING
+    Route::post('admin/users/files',            'Admin\AdminController@getFiles'); // PENDEDING
+    // Route::post('admin/user/file',              'Admin\UserController@create'); // PENDEDING
+    Route::delete('admin/file',                 'Admin\AdminController@deleteFile'); // PENDEDING
+
+    Route::get('logout',  'Core\LoginController@logout');
 });
